@@ -1,2 +1,150 @@
 # trxsrt
 
+A command-line tool for translating SRT subtitle files using the free Google Translate (GTX) API. Supports translating to a single language or all 86 supported languages at once.
+
+## Prerequisites
+
+- Node.js >= 20.9.0
+
+## Usage
+
+```bash
+npx trxsrt <file.srt> -f <language> -t <language>
+npx trxsrt <file.srt> -f <language> --all-languages
+```
+
+### Arguments
+
+| Argument | Short | Description |
+|---|---|---|
+| `<file>` | | SRT file path (required, must be `.srt`) |
+| `--from <language>` | `-f` | Source language — name or code (required) |
+| `--to <language>` | `-t` | Target language — name or code (required unless `--all-languages`) |
+| `--all-languages` | `-a` | Translate to all 86 supported languages (excludes source) |
+| `--concurrency <n>` | `-c` | Max concurrent API requests (default: `10`) |
+| `--output <dir>` | `-o` | Output directory (default: same directory as input file) |
+
+### Examples
+
+Translate to Greek using language name:
+
+```bash
+npx trxsrt movie.srt -f english -t greek
+```
+
+Translate to Greek using language code:
+
+```bash
+npx trxsrt movie.srt -f en -t el
+```
+
+Translate to all languages, output to a custom directory:
+
+```bash
+npx trxsrt movie.srt -f en --all-languages -o ./translated
+```
+
+Lower concurrency to avoid rate limits:
+
+```bash
+npx trxsrt movie.srt -f en -t el -c 5
+```
+
+### Output Files
+
+Output files are named `<filename>.<lang-code>.srt` and placed in the same directory as the input file (or the directory specified by `--output`).
+
+```
+movie.srt           # input
+movie.el.srt        # Greek output
+movie.ja.srt        # Japanese output
+movie.zh-hant.srt   # Traditional Chinese output
+```
+
+### Progress Display
+
+The tool shows real-time progress for each language:
+
+```
+Parsed 120 subtitle lines from movie.srt
+Translating from English (en) to 1 language(s)
+
+[1/1] Greek (el)
+  [el] Translating... 45/120 lines
+```
+
+When translating to all languages, a final summary is shown:
+
+```
+Done! 85 succeeded, 0 failed.
+```
+
+## Supported Languages
+
+Languages can be specified by full name (case-insensitive) or code.
+
+| Code | Language | Code | Language |
+|---|---|---|---|
+| `en` | English | `nl` | Dutch |
+| `zh` | Simplified Chinese | `sv` | Swedish |
+| `zh-hant` | Traditional Chinese | `da` | Danish |
+| `es` | Spanish | `nb` | Norwegian |
+| `de` | German | `is` | Icelandic |
+| `pt-br` | Portuguese (Brazil) | `af` | Afrikaans |
+| `pt-pt` | Portuguese (Portugal) | `ro` | Romanian |
+| `fr` | French | `ca` | Catalan |
+| `ja` | Japanese | `uk` | Ukrainian |
+| `ko` | Korean | `pl` | Polish |
+| `ru` | Russian | `cs` | Czech |
+| `it` | Italian | `sk` | Slovak |
+| `ar` | Arabic | `bg` | Bulgarian |
+| `vi` | Vietnamese | `sr` | Serbian |
+| `hi` | Hindi | `hr` | Croatian |
+| `id` | Indonesian | `bs` | Bosnian |
+| `yue` | Cantonese | `sl` | Slovenian |
+| `mk` | Macedonian | `ka` | Georgian |
+| `be` | Belarusian | `tr` | Turkish |
+| `el` | Greek | `he` | Hebrew |
+| `hu` | Hungarian | `fa` | Persian |
+| `fi` | Finnish | `ur` | Urdu |
+| `lt` | Lithuanian | `uz` | Uzbek |
+| `lv` | Latvian | `kk` | Kazakh |
+| `et` | Estonian | `ky` | Kyrgyz |
+| `sq` | Albanian | `tk` | Turkmen |
+| `mt` | Maltese | `az` | Azerbaijani |
+| `hy` | Armenian | `tg` | Tajik |
+| `mn` | Mongolian | `ta` | Tamil |
+| `bn` | Bengali | `te` | Telugu |
+| `mr` | Marathi | `gu` | Gujarati |
+| `kn` | Kannada | `pa` | Punjabi |
+| `ml` | Malayalam | `ne` | Nepali |
+| `bho` | Bhojpuri | `lo` | Lao |
+| `th` | Thai | `my` | Burmese |
+| `ms` | Malay | `jv` | Javanese |
+| `fil` | Filipino (Tagalog) | `sw` | Swahili |
+| `ha` | Hausa | `ug` | Uyghur |
+| `am` | Amharic | | |
+
+## How It Works
+
+1. **Parse** — The SRT file is read and split into structural lines (subtitle numbers, timecodes, blank lines) and content lines. Only content lines are sent for translation; the SRT structure is preserved exactly.
+
+2. **Translate** — Each content line is sent to the GTX API (`translate.googleapis.com`) as an individual request. Requests run concurrently (default 10 at a time) using `p-limit`.
+
+3. **Retry** — Failed requests are retried up to 3 times with exponential backoff (2s base, 2x factor, 60s max, randomized jitter). Network errors, 5xx, and 429 responses are retried. Auth errors (401, 403) are not.
+
+4. **Rebuild** — Translated lines are placed back into the original SRT structure at their original positions, preserving subtitle numbers, timecodes, and formatting.
+
+5. **Write** — The translated SRT is written to disk. In multi-language mode, each file is written as soon as its translation completes, with a 500ms delay between languages.
+
+## Error Handling
+
+- Invalid file path or non-`.srt` extension: exits with an error message
+- Unrecognized language name/code: exits with the full list of available languages
+- Translation API failures: retried automatically, with per-language error reporting in the final summary
+- If any languages fail in `--all-languages` mode, the tool exits with code 1 and lists all failures
+
+## Notes
+
+- The GTX API is a free, unauthenticated Google Translate endpoint. It may enforce rate limits on heavy usage — lower the `--concurrency` value if you encounter 429 errors.
+- The tool only supports `.srt` files. For other subtitle formats (VTT, ASS, LRC), use the main [Subtitle Translator](https://github.com/immersive-translate/subtitle-translator) web application.
