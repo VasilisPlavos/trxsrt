@@ -1,0 +1,30 @@
+{
+  "name": "trxsrt",
+  "version": "1.0.1",
+  "description": "CLI tool for translating SRT subtitle files using Google Translate (GTX)",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "trxsrt": "dist/translate.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "translate": "tsx translate.ts"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "p-limit": "^7.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4.19.0",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}
