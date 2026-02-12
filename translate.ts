@@ -14,6 +14,7 @@ interface Language {
 //autocorrect:false
 const LANGUAGES: Language[] = [
   { value: "en", name: "English" },
+  { value: "el", name: "Greek" },
   { value: "zh", name: "Simplified Chinese" },
   { value: "zh-hant", name: "Traditional Chinese" },
   { value: "es", name: "Spanish" },
@@ -49,7 +50,6 @@ const LANGUAGES: Language[] = [
   { value: "sl", name: "Slovenian" },
   { value: "mk", name: "Macedonian" },
   { value: "be", name: "Belarusian" },
-  { value: "el", name: "Greek" },
   { value: "hu", name: "Hungarian" },
   { value: "fi", name: "Finnish" },
   { value: "lt", name: "Lithuanian" },
