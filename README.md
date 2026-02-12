@@ -101,28 +101,24 @@ Done! 85 succeeded, 0 failed.
 
 If you use an AI-powered CLI (like Claude Code, Copilot CLI, etc.), you can feed the tool instructions directly:
 
-```bash
-curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md
-```
-
 The [`skill.md`](skill.md) file contains structured instructions that help LLMs understand how to use `trxsrt` on your behalf. You can pipe it into any AI-powered CLI:
 
 **Claude Code:**
 
 ```bash
-curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | claude --prompt "learn this skill"
+read  https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md and learn how to translate subtitles
 ```
 
 **OpenAI Codex CLI:**
 
 ```bash
-curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | codex --prompt "translate movie.srt from english to greek"
+read  https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md and learn how to translate subtitles
 ```
 
 **Google Gemini CLI:**
 
 ```bash
-curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | gemini --prompt "learn this skill"
+read  https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md and learn how to translate subtitles
 ```
 
 Or simply paste the URL into any AI chat and ask it to translate your subtitles.
