@@ -4,6 +4,22 @@
 
 A free command-line tool for translating SRT subtitle files. No API key required. Supports 70+ languages.
 
+🦞 OpenClaw-ready — OpenClaw and AI CLI tools like Claude Code, Codex CLI, and Gemini CLI can [learn it as a skill](#use-with-ai-cli-tools) and use it whenever you ask.
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Usage](#usage)
+  - [Arguments](#arguments)
+  - [Examples](#examples)
+  - [Output Files](#output-files)
+  - [Progress Display](#progress-display)
+- [Use with AI CLI Tools](#use-with-ai-cli-tools)
+- [Supported Languages](#supported-languages)
+- [How It Works](#how-it-works)
+- [Error Handling](#error-handling)
+- [Notes](#notes)
+
 ## Prerequisites
 
 - Node.js >= 20.9.0
@@ -81,6 +97,36 @@ When translating to all languages, a final summary is shown:
 Done! 85 succeeded, 0 failed.
 ```
 
+## Use with AI CLI Tools
+
+If you use an AI-powered CLI (like Claude Code, Copilot CLI, etc.), you can feed the tool instructions directly:
+
+```bash
+curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md
+```
+
+The [`skill.md`](skill.md) file contains structured instructions that help LLMs understand how to use `trxsrt` on your behalf. You can pipe it into any AI-powered CLI:
+
+**Claude Code:**
+
+```bash
+curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | claude --prompt "learn this skill"
+```
+
+**OpenAI Codex CLI:**
+
+```bash
+curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | codex --prompt "translate movie.srt from english to greek"
+```
+
+**Google Gemini CLI:**
+
+```bash
+curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | gemini --prompt "learn this skill"
+```
+
+Or simply paste the URL into any AI chat and ask it to translate your subtitles.
+
 ## Supported Languages
 
 Languages can be specified by full name (case-insensitive) or code.
@@ -145,36 +191,6 @@ Languages can be specified by full name (case-insensitive) or code.
 - Unrecognized language name/code: exits with the full list of available languages
 - Translation API failures: retried automatically, with per-language error reporting in the final summary
 - If any languages fail in `--all-languages` mode, the tool exits with code 1 and lists all failures
-
-## Use with AI CLI Tools
-
-If you use an AI-powered CLI (like Claude Code, Copilot CLI, etc.), you can feed the tool instructions directly:
-
-```bash
-curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md
-```
-
-The [`skill.md`](skill.md) file contains structured instructions that help LLMs understand how to use `trxsrt` on your behalf. You can pipe it into any AI-powered CLI:
-
-**Claude Code:**
-
-```bash
-curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | claude --prompt "learn this skill"
-```
-
-**OpenAI Codex CLI:**
-
-```bash
-curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | codex --prompt "translate movie.srt from english to greek"
-```
-
-**Google Gemini CLI:**
-
-```bash
-curl -s https://raw.githubusercontent.com/VasilisPlavos/trxsrt/main/skill.md | gemini --prompt "learn this skill"
-```
-
-Or simply paste the URL into any AI chat and ask it to translate your subtitles.
 
 ## Notes
 
