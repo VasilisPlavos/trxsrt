@@ -1,5 +1,7 @@
 # trxsrt
 
+[![npm](https://img.shields.io/npm/v/trxsrt)](https://www.npmjs.com/package/trxsrt)
+
 A free command-line tool for translating SRT subtitle files. No API key required. Supports 70+ languages.
 
 ## Prerequisites
