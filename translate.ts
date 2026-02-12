@@ -84,7 +84,7 @@ const LANGUAGES: Language[] = [
   { value: "lo", name: "Lao" },
   { value: "my", name: "Burmese" },
   { value: "ms", name: "Malay" },
-  { value: "fil", name: "Filipino(Tagalog)" },
+  { value: "fil", name: "Filipino (Tagalog)" },
   { value: "jv", name: "Javanese" },
   { value: "sw", name: "Swahili" },
   { value: "ha", name: "Hausa" },
@@ -159,10 +159,8 @@ async function translateText(
   const response = await fetch(url);
 
   if (!response.ok) {
-    const err = new Error(`HTTP error! status: ${response.status}`) as Error & {
-      status: number;
-    };
-    (err as Error & { status: number }).status = response.status;
+    const err = new Error(`HTTP error! status: ${response.status}`) as Error & { status?: number };
+    err.status = response.status;
     throw err;
   }
 
