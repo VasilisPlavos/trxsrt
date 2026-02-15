@@ -1,5 +1,5 @@
-import { createInterface } from "readline";
 import { CaptchaError } from "../errors/CaptchaError.js";
+import { createInterface } from "readline";
 
 interface trxTranslate {
     text: string,
