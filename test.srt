@@ -1,0 +1,145 @@
+1
+00:00:01,506 --> 00:00:05,122
+[music]
+
+2
+00:00:05,320 --> 00:00:09,263
+Hi, I'm Ryan Dahl. You might know me as 
+the creator of Node.js.
+
+3
+00:00:09,263 --> 00:00:12,444
+As a programmer, I like things that are simple.
+
+4
+00:00:16,960 --> 00:00:18,000
+Really simple.
+
+5
+00:00:18,925 --> 00:00:20,576
+Programming should be simple. 
+
+6
+00:00:20,800 --> 00:00:22,381
+That's why I created Node.
+
+7
+00:00:23,269 --> 00:00:25,939
+But these days Node is not simple.
+
+8
+00:00:26,707 --> 00:00:30,155
+[siren]
+
+9
+00:00:30,459 --> 00:00:32,760
+Just ask Rachel, she's been here for days.
+
+10
+00:00:32,994 --> 00:00:35,835
+Setting up TypeScript is an easy 47 step process:
+
+11
+00:00:35,879 --> 00:00:42,415
+first you take a TS config file [...] add an ES in front [...]
+becomes a JavaScript target [...] don't forget Al Gore!
+
+12
+00:00:42,809 --> 00:00:47,000
+And here's Steve commemorating the 20th test 
+framework he's recently learned.
+
+13
+00:00:47,394 --> 00:00:49,106
+Ahh, please be gentle!
+
+14
+00:00:50,909 --> 00:00:53,291
+Okay, I'm good.
+
+15
+00:00:54,844 --> 00:00:57,508
+Getting Node APIs to work in the 
+browser can be...
+
+16
+00:00:59,700 --> 00:01:01,650
+...frustrating.  
+
+17
+00:01:01,812 --> 00:01:03,161
+[crying]
+
+18
+00:01:03,848 --> 00:01:06,050
+Security is also a nightmare. 
+
+19
+00:01:06,686 --> 00:01:09,334
+npm packages have access to everything.
+
+20
+00:01:09,859 --> 00:01:13,116
+Go, go, go! Grab everything, grab everything! Oh hey there!
+
+21
+00:01:23,289 --> 00:01:29,420
+But you can be a faster, more productive developer with Deno,
+the simplest way to program.
+
+22
+00:01:31,440 --> 00:01:34,960
+Deno comes with TypeScript, 
+all-in-one tooling, and web  
+
+23
+00:01:34,960 --> 00:01:38,308
+standard APIs, so you can write 
+once and run anywhere.
+
+24
+00:01:38,439 --> 00:01:39,167
+Anywhere?
+
+25
+00:01:39,541 --> 00:01:40,304
+Anywhere.
+
+26
+00:01:43,460 --> 00:01:48,000
+Deno is secure by default so every 
+dependency doesn't have full access to your computer.
+
+27
+00:01:49,526 --> 00:01:51,105
+[whoosh and shattering glass]
+
+28
+00:01:56,470 --> 00:01:59,434
+And you don't have to give 
+up the packages you love from npm.
+
+29
+00:01:59,636 --> 00:02:00,793
+I can use Next.js?
+
+30
+00:02:01,056 --> 00:02:01,556
+Yeah!
+
+31
+00:02:01,919 --> 00:02:03,449
+He said I can use Next.js!
+
+32
+00:02:04,358 --> 00:02:05,325
+And many more.
+
+33
+00:02:08,960 --> 00:02:12,478
+So join hundreds of thousands of developers using Deno
+
+34
+00:02:12,478 --> 00:02:14,764
+because programming should be simple.
+

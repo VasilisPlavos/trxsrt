@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 import { program } from "commander";
+import Conf from "conf";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
-import { resolve, dirname, basename, extname, join } from "path";
 import pLimit from "p-limit";
+import { resolve, dirname, basename, extname, join } from "path";
+
+import { CaptchaError } from "./errors/CaptchaError.js";
+import { gtxServices } from "./services/gtxServices.js";
 
 // ── Language Data (from languages-data.ts, excluding "auto") ────────────────
 
@@ -148,25 +152,6 @@ function rebuildSRT(
   return output.join("\n");
 }
 
-// ── GTX API Client ──────────────────────────────────────────────────────────
-
-async function translateText(
-  text: string,
-  sourceLang: string,
-  targetLang: string
-): Promise<string> {
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    const err = new Error(`HTTP error! status: ${response.status}`) as Error & { status?: number };
-    err.status = response.status;
-    throw err;
-  }
-
-  const data = await response.json();
-  return (data[0] as unknown[][]).map((part) => part[0]).join("");
-}
 
 // ── Retry Logic ─────────────────────────────────────────────────────────────
 
@@ -176,6 +161,7 @@ const RETRY_MIN = 2000;
 const RETRY_MAX = 60000;
 
 function isRetryable(error: unknown): boolean {
+  if (error instanceof CaptchaError) return false;
   const status = (error as { status?: number })?.status;
   if (status === 401 || status === 403) return false;
   return !status || status >= 500 || status === 429;
@@ -207,7 +193,8 @@ async function translateSRT(
   sourceLang: string,
   targetLang: string,
   targetName: string,
-  concurrency: number
+  concurrency: number,
+  cookie?: string
 ): Promise<string> {
   const { contentLines, contentIndices, lines } = parsed;
   const translatedLines = new Array<string>(contentLines.length);
@@ -226,7 +213,7 @@ async function translateSRT(
   const tasks = contentLines.map((line, i) =>
     limit(async () => {
       translatedLines[i] = await withRetry(() =>
-        translateText(line, sourceLang, targetLang)
+        gtxServices.translateText({ sourceLang, targetLang, text: line, cookie })
       );
       completed++;
       writeProgress();
@@ -255,6 +242,8 @@ program
     "-o, --output <directory>",
     "Output directory (default: same as input)"
   )
+  .option("--cookie <cookie>", "Google abuse exemption cookie (GOOGLE_ABUSE_EXEMPTION=...)")
+  .option("--non-interactive", "Exit with error on CAPTCHA instead of prompting")
   .action(
     async (
       file: string,
@@ -264,6 +253,8 @@ program
         allLanguages?: boolean;
         concurrency: string;
         output?: string;
+        cookie?: string;
+        nonInteractive?: boolean;
       }
     ) => {
       // Validate file
@@ -347,6 +338,27 @@ program
         `Translating from ${sourceLang.name} (${sourceLang.value}) to ${targets.length} language(s)\n`
       );
 
+      // Resolve cookie: --cookie flag > stored cookie > none
+      const config = new Conf({ projectName: "trxsrt" });
+      let cookie = opts.cookie || (config.get("cookie") as string | undefined);
+      if (cookie) console.log("Using saved cookie from previous session");
+
+      // Preflight: test a single request to check for CAPTCHA before bulk translation
+      console.log("Checking API access...");
+      try {
+        const skipCaptchaErrorFix = opts.nonInteractive ? true : false;
+        await gtxServices.translateText({ text: "hello", sourceLang: sourceLang.value, targetLang: targets[0].value, cookie, skipCaptchaErrorFix });
+        console.log("API access OK\n");
+      } catch (err) {
+        if (err instanceof CaptchaError) {
+          cookie = await gtxServices.promptForCookie(err.url);
+          config.set("cookie", cookie);
+          console.log("Cookie saved for future runs\n");
+        } else {
+          throw err;
+        }
+      }
+
       // Translate each target
       const results: { lang: Language; success: boolean; error?: string }[] = [];
 
@@ -362,7 +374,8 @@ program
             sourceLang.value,
             target.value,
             target.name,
-            concurrency
+            concurrency,
+            cookie
           );
           const outPath = join(outputDir, `${fileBase}.${target.value}.srt`);
           writeFileSync(outPath, translated, "utf-8");

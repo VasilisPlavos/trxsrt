@@ -17,6 +17,7 @@ A free command-line tool for translating SRT subtitle files. No API key required
 - [Use with AI CLI Tools](#use-with-ai-cli-tools)
 - [Supported Languages](#supported-languages)
 - [How It Works](#how-it-works)
+- [CAPTCHA Recovery](#captcha-recovery)
 - [Error Handling](#error-handling)
 - [Notes](#notes)
 
@@ -41,6 +42,7 @@ npx trxsrt <file.srt> -f <language> --all-languages
 | `--all-languages`   | `-a`  | Translate to all supported languages (excludes source)             |
 | `--concurrency <n>` | `-c`  | Max concurrent API requests (default: `10`)                        |
 | `--output <dir>`    | `-o`  | Output directory (default: same directory as input file)           |
+| `--cookie <cookie>` |       | Google abuse exemption cookie (`GOOGLE_ABUSE_EXEMPTION=...`)       |
 
 ### Examples
 
@@ -173,18 +175,34 @@ Languages can be specified by full name (case-insensitive) or code.
 
 1. **Parse** — The SRT file is read and split into structural lines (subtitle numbers, timecodes, blank lines) and content lines. Only content lines are sent for translation; the SRT structure is preserved exactly.
 
-2. **Translate** — Each content line is translated individually. Requests run concurrently (default 10 at a time) using `p-limit`.
+2. **Preflight** — A single test request is sent before bulk translation to verify API access. If Google returns a CAPTCHA, the tool pauses and prompts you to solve it in your browser and paste the cookie (see [CAPTCHA Recovery](#captcha-recovery)).
 
-3. **Retry** — Failed requests are retried up to 3 times with exponential backoff (2s base, 2x factor, 60s max, randomized jitter). Network errors, 5xx, and 429 responses are retried. Auth errors (401, 403) are not.
+3. **Translate** — Each content line is translated individually. Requests run concurrently (default 10 at a time) using `p-limit`.
 
-4. **Rebuild** — Translated lines are placed back into the original SRT structure at their original positions, preserving subtitle numbers, timecodes, and formatting.
+4. **Retry** — Failed requests are retried up to 3 times with exponential backoff (2s base, 2x factor, 60s max, randomized jitter). Network errors, 5xx, and 429 responses are retried. Auth errors (401, 403) and CAPTCHA responses are not.
 
-5. **Write** — The translated SRT is written to disk. In multi-language mode, each file is written as soon as its translation completes, with a 500ms delay between languages.
+5. **Rebuild** — Translated lines are placed back into the original SRT structure at their original positions, preserving subtitle numbers, timecodes, and formatting.
+
+6. **Write** — The translated SRT is written to disk. In multi-language mode, each file is written as soon as its translation completes, with a 500ms delay between languages.
+
+## CAPTCHA Recovery
+
+When Google rate-limits you, the tool will detect it and interactively guide you through recovery:
+
+1. The tool prints the blocked URL
+2. Open the URL in your browser and solve the CAPTCHA
+3. Copy the `GOOGLE_ABUSE_EXEMPTION=...` cookie from DevTools (see [COOKIE.md](COOKIE.md))
+4. Paste it in the terminal when prompted
+
+The cookie is **saved automatically** for future runs (stored via [`conf`](https://www.npmjs.com/package/conf) in your OS config directory). On the next run, the saved cookie is loaded automatically — no need to paste it again unless it expires.
+
+You can also pass a cookie directly via the `--cookie` flag, which takes priority over any saved cookie.
 
 ## Error Handling
 
 - Invalid file path or non-`.srt` extension: exits with an error message
 - Unrecognized language name/code: exits with the full list of available languages
+- CAPTCHA / rate-limiting: detected automatically, pauses and prompts for a cookie (see [CAPTCHA Recovery](#captcha-recovery))
 - Translation API failures: retried automatically, with per-language error reporting in the final summary
 - If any languages fail in `--all-languages` mode, the tool exits with code 1 and lists all failures
 
@@ -192,4 +210,5 @@ Languages can be specified by full name (case-insensitive) or code.
 
 - Completely free — no API key or account needed.
 - Rate limits may apply on heavy usage — lower the `--concurrency` value if you encounter 429 errors.
+- If rate-limited, the tool will prompt you for a cookie and save it for future runs.
 - Only `.srt` files are supported.
