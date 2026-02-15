@@ -12,6 +12,15 @@ interface trxTranslate {
 export const gtxServices = {
 
     async promptForCookie(blockedUrl: string): Promise<string> {
+      // Non-interactive environment (CI, automation, piped stdin) — throw instead of hanging
+      if (!process.stdin.isTTY) {
+        throw new Error(
+          `Google requires a CAPTCHA but stdin is not interactive. ` +
+          `Solve the CAPTCHA at: ${blockedUrl} ` +
+          `then re-run with --cookie <GOOGLE_ABUSE_EXEMPTION=...>`
+        );
+      }
+
       const rl = createInterface({ input: process.stdin, output: process.stderr });
       process.stderr.write("\n");
       process.stderr.write("╔══════════════════════════════════════════════════════════════╗\n");
@@ -22,7 +31,7 @@ export const gtxServices = {
       process.stderr.write("  2. Solve the CAPTCHA\n");
       process.stderr.write("  3. Copy the GOOGLE_ABUSE_EXEMPTION=... cookie\n\n");
       process.stderr.write("  Read more at https://github.com/VasilisPlavos/trxsrt/blob/main/COOKIE.md\n\n");
-    
+
       return new Promise<string>((resolve) => {
         rl.question("  Paste cookie: ", (answer) => {
           rl.close();

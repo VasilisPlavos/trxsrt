@@ -4,7 +4,6 @@ import Conf from "conf";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import pLimit from "p-limit";
 import { resolve, dirname, basename, extname, join } from "path";
-import { createInterface } from "readline";
 
 import { CaptchaError } from "./errors/CaptchaError.js";
 import { gtxServices } from "./services/gtxServices.js";
@@ -244,6 +243,7 @@ program
     "Output directory (default: same as input)"
   )
   .option("--cookie <cookie>", "Google abuse exemption cookie (GOOGLE_ABUSE_EXEMPTION=...)")
+  .option("--non-interactive", "Exit with error on CAPTCHA instead of prompting")
   .action(
     async (
       file: string,
@@ -254,6 +254,7 @@ program
         concurrency: string;
         output?: string;
         cookie?: string;
+        nonInteractive?: boolean;
       }
     ) => {
       // Validate file
@@ -342,11 +343,11 @@ program
       let cookie = opts.cookie || (config.get("cookie") as string | undefined);
       if (cookie) console.log("Using saved cookie from previous session");
 
-
       // Preflight: test a single request to check for CAPTCHA before bulk translation
       console.log("Checking API access...");
       try {
-        await gtxServices.translateText({ text: "hello", sourceLang: sourceLang.value, targetLang: targets[0].value, cookie, skipCaptchaErrorFix: false });
+        const skipCaptchaErrorFix = opts.nonInteractive ? true : false;
+        await gtxServices.translateText({ text: "hello", sourceLang: sourceLang.value, targetLang: targets[0].value, cookie, skipCaptchaErrorFix });
         console.log("API access OK\n");
       } catch (err) {
         if (err instanceof CaptchaError) {
