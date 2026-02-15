@@ -13,10 +13,12 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "translate": "tsx translate.ts"
+    "translate": "tsx translate.ts",
+    "test": "tsx translate.ts test.srt -f en -t greek"
   },
   "dependencies": {
     "commander": "^13.1.0",
+    "conf": "^15.1.0",
     "p-limit": "^7.2.0"
   },
   "devDependencies": {
