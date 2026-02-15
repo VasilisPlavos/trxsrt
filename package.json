@@ -3,6 +3,10 @@
   "version": "1.0.2",
   "description": "CLI tool for translating SRT subtitle files using Google Translate (GTX)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VasilisPlavos/trxsrt"
+  },
   "type": "module",
   "bin": {
     "trxsrt": "dist/translate.js"
