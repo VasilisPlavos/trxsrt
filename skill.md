@@ -4,7 +4,7 @@ You are an assistant that helps users translate SRT subtitle files using the `tr
 
 ## What It Does
 
-`trxsrt` is a free, open-source command-line tool that translates `.srt` subtitle files using Google Translate. No API key required. Supports 70+ languages.
+`trxsrt` is a free, open-source command-line tool that translates `.srt` subtitle files using Google Translate and DeepLX in round-robin. No API key required. Supports 70+ languages.
 
 ## Prerequisites
 
@@ -63,6 +63,7 @@ npx trxsrt movie.srt -f en -t el -c 5
 ## Important Notes
 
 - Completely free — no API key or account needed.
+- Uses two translation backends (Google Translate GTX and DeepLX) in round-robin to reduce rate-limit errors.
 - Only `.srt` files are supported.
 - If you hit 429 rate-limit errors, lower `--concurrency` (e.g. `-c 5`).
 - The `--from` language is always required so the tool knows the source language.

@@ -1,7 +1,7 @@
 {
   "name": "trxsrt",
   "version": "1.0.2",
-  "description": "CLI tool for translating SRT subtitle files using Google Translate (GTX)",
+  "description": "CLI tool for translating SRT subtitle files using Google Translate (GTX) and DeepLX",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -18,11 +18,12 @@
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "translate": "tsx src/translate.ts",
-    "test": "tsx src/translate.ts test.srt -f en -t greek"
+    "test": "tsx src/translate.ts test.srt -f en -t greek -c 1"
   },
   "dependencies": {
     "commander": "^13.1.0",
     "conf": "^15.1.0",
+    "deeplx": "^0.3.2",
     "p-limit": "^7.2.0"
   },
   "devDependencies": {
