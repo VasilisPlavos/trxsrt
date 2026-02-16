@@ -8,7 +8,7 @@ interface trxTranslate {
 
 export const deepLxServices = {
 
-    async translateText({ text, sourceLang, targetLang }: trxTranslate): Promise<string> {
+    async translateText({ text, sourceLang, targetLang }: { text: string, sourceLang: SourceLanguage, targetLang: TargetLanguage }): Promise<string> {
         return await translate(text, targetLang, sourceLang);
     }
 
