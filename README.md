@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/trxsrt)](https://www.npmjs.com/package/trxsrt)
 
-A free command-line tool for translating SRT subtitle files. No API key required. Supports 70+ languages.
+A free command-line tool for translating SRT subtitle files using Google Translate and DeepLX. No API key required. Supports 70+ languages.
 
 🦞 OpenClaw-ready — OpenClaw and AI CLI tools like Claude Code, Codex CLI, and Gemini CLI can [learn it as a skill](#use-with-ai-cli-tools) and use it whenever you ask.
 
@@ -177,7 +177,7 @@ Languages can be specified by full name (case-insensitive) or code.
 
 2. **Preflight** — A single test request is sent before bulk translation to verify API access. If Google returns a CAPTCHA, the tool pauses and prompts you to solve it in your browser and paste the cookie (see [CAPTCHA Recovery](#captcha-recovery)).
 
-3. **Translate** — Each content line is translated individually. Requests run concurrently (default 10 at a time) using `p-limit`.
+3. **Translate** — Each content line is translated individually using two translation backends in a round-robin pattern: even-indexed lines go through Google Translate (GTX), odd-indexed lines go through DeepLX. This distributes the load across both services and reduces rate-limit errors. Requests run concurrently (default 10 at a time) using `p-limit`.
 
 4. **Retry** — Failed requests are retried up to 3 times with exponential backoff (2s base, 2x factor, 60s max, randomized jitter). Network errors, 5xx, and 429 responses are retried. Auth errors (401, 403) and CAPTCHA responses are not.
 
@@ -209,6 +209,7 @@ You can also pass a cookie directly via the `--cookie` flag, which takes priorit
 ## Notes
 
 - Completely free — no API key or account needed.
-- Rate limits may apply on heavy usage — lower the `--concurrency` value if you encounter 429 errors.
-- If rate-limited, the tool will prompt you for a cookie and save it for future runs.
+- Uses two translation backends (Google Translate GTX and DeepLX) in round-robin to distribute load and reduce rate-limit errors.
+- Rate limits may still apply on heavy usage — lower the `--concurrency` value if you encounter 429 errors.
+- If rate-limited by Google, the tool will prompt you for a cookie and save it for future runs.
 - Only `.srt` files are supported.

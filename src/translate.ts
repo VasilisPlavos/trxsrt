@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import { program } from "commander";
 import Conf from "conf";
+import { SourceLanguage, TargetLanguage } from "deeplx";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import pLimit from "p-limit";
 import { resolve, dirname, basename, extname, join } from "path";
 
 import { CaptchaError } from "./errors/CaptchaError.js";
+import { deepLxServices } from "./services/deepLxServices.js";
 import { gtxServices } from "./services/gtxServices.js";
 
 // ── Language Data (from languages-data.ts, excluding "auto") ────────────────
@@ -190,9 +192,8 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
 
 async function translateSRT(
   parsed: ParsedSRT,
-  sourceLang: string,
-  targetLang: string,
-  targetName: string,
+  sourceLang: SourceLanguage,
+  targetLang: TargetLanguage,
   concurrency: number,
   cookie?: string
 ): Promise<string> {
@@ -213,7 +214,9 @@ async function translateSRT(
   const tasks = contentLines.map((line, i) =>
     limit(async () => {
       translatedLines[i] = await withRetry(() =>
-        gtxServices.translateText({ sourceLang, targetLang, text: line, cookie })
+        i % 2 === 0
+          ? gtxServices.translateText({ sourceLang, targetLang, text: line, cookie })
+          : deepLxServices.translateText({ sourceLang, targetLang, text: line })
       );
       completed++;
       writeProgress();
@@ -232,7 +235,7 @@ async function translateSRT(
 
 program
   .name("trxsrt")
-  .description("Translate SRT subtitle files using Google Translate (GTX)")
+  .description("Translate SRT subtitle files using Google Translate (GTX) and DeepLX")
   .argument("<file>", "SRT file to translate")
   .requiredOption("-f, --from <language>", "Source language (name or code)")
   .option("-t, --to <language>", "Target language (name or code)")
@@ -347,7 +350,8 @@ program
       console.log("Checking API access...");
       try {
         const skipCaptchaErrorFix = opts.nonInteractive ? true : false;
-        await gtxServices.translateText({ text: "hello", sourceLang: sourceLang.value, targetLang: targets[0].value, cookie, skipCaptchaErrorFix });
+        const targetLang = targets[0].value as TargetLanguage
+        await gtxServices.translateText({ text: "hello", sourceLang: sourceLang.value as SourceLanguage, targetLang, cookie, skipCaptchaErrorFix });
         console.log("API access OK\n");
       } catch (err) {
         if (err instanceof CaptchaError) {
@@ -371,9 +375,8 @@ program
         try {
           const translated = await translateSRT(
             parsed,
-            sourceLang.value,
-            target.value,
-            target.name,
+            sourceLang.value as SourceLanguage,
+            target.value as TargetLanguage,
             concurrency,
             cookie
           );

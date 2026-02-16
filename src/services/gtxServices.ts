@@ -1,10 +1,11 @@
+import { SourceLanguage, TargetLanguage } from "deeplx";
 import { CaptchaError } from "../errors/CaptchaError.js";
 import { createInterface } from "readline";
 
 interface trxTranslate {
     text: string,
-    sourceLang: string,
-    targetLang: string,
+    sourceLang: SourceLanguage,
+    targetLang: TargetLanguage,
     cookie?: string,
     skipCaptchaErrorFix?: boolean
 }
