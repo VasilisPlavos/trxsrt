@@ -190,6 +190,12 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
 
 // ── Core Translation ────────────────────────────────────────────────────────
 
+let serviceCounter = 0;
+
+function nextService(): "gtx" | "deeplx" {
+  return serviceCounter++ % 2 === 0 ? "gtx" : "deeplx";
+}
+
 async function translateSRT(
   parsed: ParsedSRT,
   sourceLang: SourceLanguage,
@@ -213,11 +219,12 @@ async function translateSRT(
 
   const tasks = contentLines.map((line, i) =>
     limit(async () => {
-      translatedLines[i] = await withRetry(() =>
-        i % 2 === 0
+      translatedLines[i] = await withRetry(() => {
+        const service = nextService();
+        return service === "gtx"
           ? gtxServices.translateText({ sourceLang, targetLang, text: line, cookie })
-          : deepLxServices.translateText({ sourceLang, targetLang, text: line })
-      );
+          : deepLxServices.translateText({ sourceLang, targetLang, text: line });
+      });
       completed++;
       writeProgress();
     })
