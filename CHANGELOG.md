@@ -7,6 +7,7 @@
 - Subtitle lines are translated in round-robin: even-indexed lines use GTX, odd-indexed lines use DeepLX. This distributes load across both services and reduces rate-limit errors.
 - New service module `src/services/deepLxServices.ts` wrapping the `deeplx` npm package.
 - `deeplx` added as a production dependency.
+- Abort on 100 consecutive translation failures — if 100 attempts in a row fail without a single success, the CLI exits with a fatal error instead of continuing indefinitely.
 
 ### Changed
 - Updated CLI description to reflect dual-backend architecture.

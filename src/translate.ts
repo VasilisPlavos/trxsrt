@@ -161,6 +161,9 @@ const RETRY_COUNT = 3;
 const RETRY_FACTOR = 2;
 const RETRY_MIN = 2000;
 const RETRY_MAX = 60000;
+const MAX_CONSECUTIVE_FAILURES = 100;
+
+let consecutiveFailures = 0;
 
 function isRetryable(error: unknown): boolean {
   if (error instanceof CaptchaError) return false;
@@ -173,9 +176,18 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
   let lastError: unknown;
   for (let attempt = 0; attempt <= RETRY_COUNT; attempt++) {
     try {
-      return await fn();
+      const result = await fn();
+      consecutiveFailures = 0;
+      return result;
     } catch (err) {
       lastError = err;
+      consecutiveFailures++;
+      if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+        console.error(
+          `\nFatal: ${MAX_CONSECUTIVE_FAILURES} consecutive translation failures. Aborting.`
+        );
+        process.exit(1);
+      }
       if (attempt === RETRY_COUNT || !isRetryable(err)) throw err;
       const base = RETRY_MIN * Math.pow(RETRY_FACTOR, attempt);
       const delay = Math.min(base, RETRY_MAX) * (0.5 + Math.random() * 0.5);
