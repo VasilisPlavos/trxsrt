@@ -191,13 +191,13 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
     } catch (err) {
       circuitBreaker.consecutiveFailures++;
       if (circuitBreaker.consecutiveFailures >= circuitBreaker.MAX_CONSECUTIVE_FAILURES) {
-        throw new Error("CIRCUIT_BREAKER_HALT"); 
+        throw new Error("CIRCUIT_BREAKER_HALT");
       }
 
       const isLastAttempt = attempt === retry.count;
       if (isLastAttempt || !isRetryable(err)) throw err;
 
-      const delay = getBackoffDelay(attempt);      
+      const delay = getBackoffDelay(attempt);
       process.stderr.write(`  Retry ${attempt + 1}/${retry.count} in ${Math.round(delay)}ms...\n`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
