@@ -157,13 +157,17 @@ function rebuildSRT(
 
 // ── Retry Logic ─────────────────────────────────────────────────────────────
 
-const RETRY_COUNT = 3;
-const RETRY_FACTOR = 2;
-const RETRY_MIN = 2000;
-const RETRY_MAX = 60000;
-const MAX_CONSECUTIVE_FAILURES = 100;
+const retry = {
+  count: 3,
+  factor: 2,
+  min: 2000,
+  max: 60000
+}
 
-let consecutiveFailures = 0;
+const circuitBreaker = {
+  consecutiveFailures: 0,
+  MAX_CONSECUTIVE_FAILURES: 100,
+};
 
 function isRetryable(error: unknown): boolean {
   if (error instanceof CaptchaError) return false;
@@ -172,34 +176,34 @@ function isRetryable(error: unknown): boolean {
   return !status || status >= 500 || status === 429;
 }
 
+const getBackoffDelay = (attempt: number) => {
+  const base = retry.min * Math.pow(retry.factor, attempt);
+  const jitter = 0.5 + Math.random() * 0.5;
+  return Math.min(base, retry.max) * jitter;
+};
+
 async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= RETRY_COUNT; attempt++) {
+  for (let attempt = 0; attempt <= retry.count; attempt++) {
     try {
       const result = await fn();
-      consecutiveFailures = 0;
+      circuitBreaker.consecutiveFailures = 0;
       return result;
     } catch (err) {
-      lastError = err;
-      consecutiveFailures++;
-      if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-        console.error(
-          `\nFatal: ${MAX_CONSECUTIVE_FAILURES} consecutive translation failures. Aborting.`
-        );
-        process.exit(1);
+      circuitBreaker.consecutiveFailures++;
+      if (circuitBreaker.consecutiveFailures >= circuitBreaker.MAX_CONSECUTIVE_FAILURES) {
+        throw new Error("CIRCUIT_BREAKER_HALT"); 
       }
-      if (attempt === RETRY_COUNT || !isRetryable(err)) throw err;
-      const base = RETRY_MIN * Math.pow(RETRY_FACTOR, attempt);
-      const delay = Math.min(base, RETRY_MAX) * (0.5 + Math.random() * 0.5);
-      process.stderr.write(
-        `  Retry ${attempt + 1}/${RETRY_COUNT} after ${Math.round(delay)}ms...\n`
-      );
-      await new Promise((r) => setTimeout(r, delay));
+
+      const isLastAttempt = attempt === retry.count;
+      if (isLastAttempt || !isRetryable(err)) throw err;
+
+      const delay = getBackoffDelay(attempt);      
+      process.stderr.write(`  Retry ${attempt + 1}/${retry.count} in ${Math.round(delay)}ms...\n`);
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  throw lastError;
+  throw new Error("Unexpected retry loop exit");
 }
-
 // ── Core Translation ────────────────────────────────────────────────────────
 
 let serviceCounter = 0;
